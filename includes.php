@@ -3,18 +3,25 @@
  * Files to include
  **/
 
-include_once "utils.php";
+include_once ROOT_PATH."utils.php";
 
-require 'vendor/autoload.php';
-require 'ChatApp.php';
+require ROOT_PATH.'vendor/autoload.php';
+
+
+// Controllers
+auto_discover("controllers");
+
+
+require ROOT_PATH.'ChatApp.php';
 
 # Exceptions
 auto_discover("exceptions");
 
 // HTTP
 auto_discover("http");
+
 // Services
-require "services/database.php";
+auto_discover("services");
 
 
 // Models

@@ -5,7 +5,8 @@ function get_or_default(&$var, $default=null) {
 }
 
 function auto_discover($path){
-    foreach (glob("$path/*.php") as $filename)
+
+    foreach (glob(ROOT_PATH."$path/*.php") as $filename)
     {
         include $filename;
     }
