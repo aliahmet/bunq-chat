@@ -43,8 +43,14 @@ $app->post('/group/{group_id}/remove', ['auth'], "\Controller\GroupController:re
 /**
  * Message Views
  */
-$app->post('/message/new/group', ['auth'], "\Controller\MessageController:send_group_message");
-$app->post('/message/new/user', ['auth'], "\Controller\MessageController:send_personal_message");
+$app->post('/message/new/group', ['auth'], "\Controller\MessageController:send_group_message",[
+    "group" => ["rules" => ["numeric"]],
+    "body" => [],
+]);
+$app->post('/message/new/user', ['auth'], "\Controller\MessageController:send_personal_message",[
+    "receiver" => ["rules" => ["numeric"]],
+    "body" => [],
+]);
 
 
 $app->serve_swagger();
