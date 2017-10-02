@@ -1,0 +1,6 @@
+paths:
+    migrations: migrations
+environments:
+    all:
+        adapter: sqlite
+        name: db.sqlite3
