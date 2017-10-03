@@ -6,5 +6,5 @@ $capsule->addConnection([
     'database' => ROOT_PATH."db.sqlite3",
 ]);
 $capsule->getContainer();
-$capsule->bootEloquent();
 $capsule->setAsGlobal();
+$capsule->bootEloquent();

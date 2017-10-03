@@ -3,7 +3,7 @@
 
 use Phinx\Migration\AbstractMigration;
 
-class CreateChatTable extends AbstractMigration
+class CreateReport extends AbstractMigration
 {
     /**
      * Change Method.
@@ -28,28 +28,18 @@ class CreateChatTable extends AbstractMigration
      */
     public function change()
     {
-        $message_table = $this->table('messages');
-        $message_table
-            ->addColumn('sender', 'integer')
-            ->addColumn('receiver', 'integer', ["null"=>true])
-            ->addColumn('group', 'integer', ["null"=>true])
-            ->addColumn('sent_date', 'datetime', ['default' => 'CURRENT_TIMESTAMP'])
-            ->addColumn('body', 'text', ['default' => 'CURRENT_TIMESTAMP'])
-            ->addForeignKey('sender', 'users', 'id', [
+        $report_table = $this->table('reports');
+        $report_table
+            ->addColumn('delivered_date', 'datetime', ['null' => true])
+            ->addColumn('seen_date', 'datetime', ['null' => true])
+            ->addColumn('user_id', 'integer')
+            ->addColumn('message_id', 'integer')
+            ->addForeignKey('message_id', 'messages', 'id', [
                 'delete'=> 'CASCADE'
             ])
-            ->addForeignKey('receiver', 'users', 'id', [
-                'delete'=> 'CASCADE'
-            ])
-            ->addForeignKey('group', 'groups', 'id', [
+            ->addForeignKey('user_id', 'users', 'id', [
                 'delete'=> 'CASCADE'
             ])
             ->create();
-
-
-
-
-
     }
-
 }

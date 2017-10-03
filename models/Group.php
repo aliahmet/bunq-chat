@@ -31,4 +31,9 @@ class Group extends Model
             "members" =>$this->users()->select(["users.username", "users.id"])->get()
         ];
     }
+
+    public function  messages($options=0)
+    {
+        return $this->hasMany('\Model\Message');
+    }
 }

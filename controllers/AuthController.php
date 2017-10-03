@@ -31,7 +31,10 @@ class AuthController
 
         $accesstoken = AccessToken::generate($user);
         return $response->withJson(
-            ['accesstoken' => $accesstoken->accesstoken]
+            [
+                'accesstoken' => $accesstoken->accesstoken,
+                'id' => $user->id
+            ]
         );
     }
 
@@ -46,7 +49,10 @@ class AuthController
         $user->save();
         $accesstoken = AccessToken::generate($user);
         return $response->withJson(
-            ['accesstoken' => $accesstoken->accesstoken], 200
+            [
+                'accesstoken' => $accesstoken->accesstoken,
+                'id' => $user->id
+            ], 201
         );
     }
 
@@ -65,11 +71,12 @@ class AuthController
     /**
      *  Logout from all devices.
      */
-    public function logout_all($request, $response, $attributes, $validated_data) {
+    public function logout_all($request, $response, $attributes, $validated_data)
+    {
 
         User::me()->accesstokens()->delete();
         return $response->withJson(
-            [ "message" => "Sucessfully logged out" ]
+            ["message" => "Sucessfully logged out"]
         );
     }
 

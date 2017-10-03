@@ -15,4 +15,11 @@ class Message extends Model
 {
     public $timestamps = false;
 
+
+    public function group()
+    {
+        return $this->belongsTo('\Model\Group');
+    }
+
+
 }
