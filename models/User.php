@@ -5,7 +5,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class User extends Model {
     public $timestamps = false;
-
     protected $hidden = ['pivot', 'password'];
 
     public  function set_password($password){

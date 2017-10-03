@@ -12,3 +12,10 @@ function auto_discover($path){
     }
 
 }
+
+function set_default(&$arr, $key, $value){
+    if(!isset($arr[$key])){
+        $arr[$key] = $value;
+    }
+
+}

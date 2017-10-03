@@ -18,7 +18,7 @@ class GroupController
      */
     public function create($request, $response, $attributes, $validated_data)
     {
-        $users = User::whereIn("id", $validated_data)->get();
+        $users = User::whereIn("id", $validated_data['users'])->get();
         $group = new Group();
         $group->name = $validated_data['name'];
         $group->save();

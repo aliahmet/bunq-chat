@@ -12,6 +12,7 @@ class Validator
      *             "rules" => ["numeric" ... etc ] # see validators
      *             "required" => true or false            | defualt: true
      *             "type" => GET,  POST, COOKIE, HEADER   | default: POST
+     *             "parser" => string, int, list          | default: string
      *                   ]
      *                  ]);
      *

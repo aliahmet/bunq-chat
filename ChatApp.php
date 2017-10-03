@@ -46,8 +46,8 @@ class ChatApp extends Slim\App
 
                 }
             }
-
-            $docs[$pattern] = generate_path($method, $pattern, $title, generate_parameters($rules));
+            set_default($docs, $pattern, []);
+            $docs[$pattern][strtolower($method)] = generate_path($method, $pattern, $title, generate_parameters($rules));
 
 
         }

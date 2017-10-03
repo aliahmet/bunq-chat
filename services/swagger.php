@@ -10,6 +10,7 @@ function generate_parameters($rules)
         $rules = get_or_default($rule['rules'], []);
         $required = get_or_default($rule['required'], true);
         $type = get_or_default($rule['type'], "POST");
+        $parser = get_or_default($rule['parser'], "string");
         $map = [
             "GET" => "query",
             "POST" => "formData",
@@ -20,6 +21,7 @@ function generate_parameters($rules)
             "name" => $name,
             "in" => $map[$type],
             "required" => $required,
+            "explode" => ($parser == "list")
         ];
 
     }
@@ -40,6 +42,7 @@ function generate_parameters($rules)
 function generate_path($method, $path, $title, $parameters)
 {
     preg_match_all('/{(.*?)}/', $path, $matches);
+    $group = explode("/", $path)[1];
     foreach ($matches[1] as $match) {
         $parameters[] = [
             "name" => $match,
@@ -47,12 +50,11 @@ function generate_path($method, $path, $title, $parameters)
             "required" => true,
         ];
     }
-    return [
-        strtolower($method) => [
+    return  [
             "summary" => $title,
             "parameters" => $parameters,
+            "tags" => [$group],
             "responses" => ["200" => ["description" => ""]]
-        ]
     ];
 
 }
