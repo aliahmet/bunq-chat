@@ -14,10 +14,12 @@ use Model\User;
 class GroupController
 {
     /**
-     *  Send a new message
+     *  Creates a new group
      */
     public function create($request, $response, $attributes, $validated_data)
     {
+        if(is_string($validated_data['users']))
+            $validated_data['users'] = explode(",",$validated_data['users']);
         $users = User::whereIn("id", $validated_data['users'])->get();
         $group = new Group();
         $group->name = $validated_data['name'];
@@ -33,7 +35,7 @@ class GroupController
     public function list_groups($request, $response, $attributes, $validated_data)
     {
 
-        return $response->withJson(User::me()->groups()->get(), 201);
+        return $response->withJson(User::me()->groups()->get());
     }
 
     /**
@@ -49,7 +51,7 @@ class GroupController
             throw new APIException("Group doesn't exist or you are not allowed to see it!");
         }
 
-        return $response->withJson($group, 201);
+        return $response->withJson($group);
     }
 
     /**

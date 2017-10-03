@@ -64,7 +64,15 @@ $app->post('/message/new/user/', ['auth'], "\Controller\MessageController:send_p
 ]);
 $app->get('/message/latests/', ['auth'], "\Controller\MessageController:get_last_messages");
 $app->get('/message/new/', ['auth'], "\Controller\MessageController:get_new_messages");
-$app->get('/message/user/{id}/', ['auth'], "\Controller\MessageController:get_messages_with_user");
+$app->get('/message/user/{id}/', ['auth'], "\Controller\MessageController:get_messages_with_user",
+    [
+        "page" => [
+            "required" => false,
+            "type" => "GET",
+            "rules" => ["numeric"]
+        ]
+    ]
+    );
 $app->get('/message/group/{id}/', ['auth'], "\Controller\MessageController:get_messages_in_group");
 $app->get('/message/all/', ['auth'], "\Controller\MessageController:get_all_messages");
 

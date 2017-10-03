@@ -60,13 +60,6 @@ window.onload = function() {
   window.ui = ui
 }
 
-$(function () {
-    $('body').on('DOMNodeInserted', 'input[placeholder=Authorization]', function () {
-        accesstoken = localStorage.getItem("accesstoken");
-        if(accesstoken)
-            $(this).val(accesstoken)
-    });
-})
 </script>
 </body>
 

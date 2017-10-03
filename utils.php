@@ -19,3 +19,5 @@ function set_default(&$arr, $key, $value){
     }
 
 }
+
+date_default_timezone_set("Europe/Istanbul");
