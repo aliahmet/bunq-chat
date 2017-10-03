@@ -15,7 +15,8 @@ class AuthController
 {
     public function test($request, $response, $attributes, $validated_data)
     {
-        return $response->withJson(["ok" => "bye"]);
+        throw  new \ErrorException("ds");
+        return $response->withJson(["ok" => $r]);
     }
 
     /**

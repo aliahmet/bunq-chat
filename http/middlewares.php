@@ -1,7 +1,7 @@
 <?php
 return [
 
-    'auth' => function ($request, $response, $args) {
+    'auth' => function ($request) {
         if(\Model\User::me())
                 return;
         throw new APIException(['message' => 'You are not allowed to see this page!']);

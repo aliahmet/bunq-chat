@@ -4,7 +4,7 @@ include ROOT_PATH.'includes.php';
 $app = new ChatApp;
 
 /***
- *  ROUTE FORMAT
+ *  Routing Spec:
  *  $app->{METHOD}(
  *                  { PATTERN },
  *                  { MIDDLEWARES },
@@ -78,4 +78,6 @@ $app->get('/message/all/', ['auth'], "\Controller\MessageController:get_all_mess
 
 
 $app->serve_swagger();
+
+if(!defined("DONT_RUN"))
 $app->run();

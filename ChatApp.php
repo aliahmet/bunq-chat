@@ -1,5 +1,8 @@
 <?php
 
+use Slim\Container;
+use Swagger\SwaggerGenerator;
+
 class ChatApp extends Slim\App
 {
     /**
@@ -11,18 +14,14 @@ class ChatApp extends Slim\App
 
     public function __construct($container = [])
     {
-        parent::__construct([
-            'settings' => [
-                'displayErrorDetails' => true,
-            ]
-        ]);
+        parent::__construct(array_merge($container, require "config/container.php"));
     }
 
-    public function applyMiddleware($middleware, $request, $response, $args)
+    public function applyMiddleware($middleware, $request)
     {
         $all_middlewares = require 'http/middlewares.php';
         $mwproc = $all_middlewares[$middleware];
-        return $mwproc($request, $response, $args);
+        return $mwproc($request);
     }
 
     public function get($pattern, $middleware_names, $view, $rules = [])
@@ -35,35 +34,6 @@ class ChatApp extends Slim\App
         return $this->map(['POST'], $middleware_names, $pattern, $view, $rules);
     }
 
-    public function generate_route_doc()
-    {
-        $docs = [];
-        foreach ($this->routes as $route) {
-            $pattern = $route[0];
-            $method = $route[1];
-            $rules = $route[2];
-            $view = $route[3];
-
-            $title = title_case(trim(str_replace("/", " ", $pattern)));
-            if (!$view instanceof Closure) {
-                $view = explode(":", $view);
-                $class = $view[0];
-                $fn = $view[1];
-                $reflector = new ReflectionClass($class);
-                $fn_doc = $reflector->getMethod($fn)->getDocComment();
-                if ($fn_doc) {
-                    $title = trim(explode("\n", $fn_doc)[1]);
-                    $title = substr($title, 1);
-
-                }
-            }
-            set_default($docs, $pattern, []);
-            $docs[$pattern][strtolower($method)] = generate_path($method, $pattern, $title, generate_parameters($rules));
-
-
-        }
-        return $docs;
-    }
 
     public function map(array $methods, array $middleware_names, $pattern, $view, $rules = [])
     {
@@ -78,8 +48,9 @@ class ChatApp extends Slim\App
                 $validated_data = \Http\Validator::check($rules);
 
                 foreach ($middleware_names as $middleware) {
-                    $app->applyMiddleware($middleware, $request, $response, $args, $validated_data);
+                    $app->applyMiddleware($middleware, $request);
                 }
+
                 if ($view instanceof Closure) {
                     return $view($request, $response, $args, $validated_data);
                 } else {
@@ -88,20 +59,22 @@ class ChatApp extends Slim\App
                     $method = $view[1];
                     return (new $class)->$method($request, $response, $args, $validated_data);
                 }
-            } catch (APIException $ae) {
-                return $response->withJson($ae->payload, 403);
+            } catch (APIException $api_exception) {
+                return $response->withJson($api_exception->payload, $api_exception->status);
             }
         };
 
         return parent::map($methods, $pattern, $wrapper_view);
     }
 
+    /**
+     * Generate Openapi Specs and serve
+     */
     public function serve_swagger()
     {
-        $app = $this;
-        $route_docs = $this->generate_route_doc();
-        $this->get("/swagger", [], function ($request, $response, $args, $validated_data) use ($route_docs) {
-            return $response->withJson(generate_swagger($route_docs));
+        $swagger = new SwaggerGenerator($this->routes);
+        $this->get("/swagger", [], function ($request, $response, $args, $validated_data) use ($swagger) {
+            return $response->withJson($swagger->openapi());
         });
     }
 

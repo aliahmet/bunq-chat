@@ -4,6 +4,7 @@ class APIException extends Exception
 {
 
     public $payload;
+    public $status = 403;
 
     public function __construct($payload = [], $code = 0, Throwable $previous = null)
     {

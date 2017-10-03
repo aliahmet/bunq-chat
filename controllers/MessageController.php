@@ -113,7 +113,11 @@ class MessageController
         $count = $messages->cloneWithout([])->count();
 
         // Set messages delivered
-        $report_ids = $messages->cloneWithout([])->whereNull("delivered_date")->where("reports.user_id", "=", $user->id)->pluck('reports.id')->toArray();
+        $report_ids = $messages->cloneWithout([])
+            ->whereNull("delivered_date")
+            ->where("reports.user_id", "=", $user->id)
+            ->pluck('reports.id')
+            ->toArray();
         Report::whereIn("id", $report_ids)->update(["delivered_date" => Carbon::now()]);
 
 
