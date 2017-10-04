@@ -1,6 +1,9 @@
 paths:
     migrations: migrations
 environments:
-    all:
+    prod:
         adapter: sqlite
         name: db.sqlite3
+    test:
+        adapter: sqlite
+        name: db.sqlite3.dev

@@ -101,7 +101,7 @@ class SwaggerGenerator
             "parameters" => $parameters,
             "tags" => [$group],
             "responses" => ["200" => [
-                "description" => "",
+                "description" => "Successful Response:",
                 "examples" => [
                     "application/json" => [
                         $sample_response

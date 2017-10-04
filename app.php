@@ -24,7 +24,9 @@ $app->post('/auth/register/', [], "\Controller\AuthController:register", [
     "username" => [
         "rules" => ["unique_username", "long_enough"],
     ],
-    "password" => ["long_enough"],
+    "password" => [
+        "rules" => ["long_enough"],
+    ],
 ]);
 $app->post('/auth/login/', [], "\Controller\AuthController:login", [
     "username" => [],
@@ -79,5 +81,5 @@ $app->get('/message/all/', ['auth'], "\Controller\MessageController:get_all_mess
 
 $app->serve_swagger();
 
-if(!defined("DONT_RUN"))
+if(!defined($_ENV["DONT_RUN"]))
 $app->run();

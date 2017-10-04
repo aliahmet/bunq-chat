@@ -65,7 +65,7 @@ class MessageController
         $report->user_id = $receiver_id;
         $report->save();
 
-        return $response->withJson(["message" => "ok"]);
+        return $response->withJson(["message" => "ok"], 201);
 
     }
 

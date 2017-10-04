@@ -15,7 +15,7 @@ class AuthController
 {
 
     /**
-     * Test View
+     * Just a view too see if the servers here.
      *
      * $sample_response
      * {

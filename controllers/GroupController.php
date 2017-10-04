@@ -8,6 +8,7 @@
 
 namespace Controller;
 
+use APIException;
 use Model\Group;
 use Model\User;
 
@@ -208,7 +209,7 @@ class GroupController
         $user_id = $validated_data['user'];
         $group_id = $attributes['group_id'];
 
-        $group = User::me()->groups()->find($group_id);
+        $group = User::me()->groups->find($group_id);
         $user = User::find($user_id);
 
         if (!$group) {
@@ -219,10 +220,11 @@ class GroupController
             throw new APIException("User is not in the group!");
         }
 
-        $group->users()->syncWithoutDetaching($user);
+        $group->users()->toggle($user);
 
-
-        return $response->withJson($group, 201);
+        if(intval($user_id) == User::me()->id)
+            return $response->withJson(["message" => "Left Group"], 200);
+        return $response->withJson($group, 200);
     }
 
 

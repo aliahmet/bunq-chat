@@ -1,5 +1,5 @@
 {
-    "name": "bunq-chat/bunq-chat",
+    "name": "aliahmet/bunq-chat",
     "description": "A simple chat server",
     "keywords": ["rest", "chat"],
     "homepage": "https://github.com/aliahmet/bunq-chat",
@@ -17,7 +17,8 @@
         "slim/php-view": "^2.0",
         "monolog/monolog": "^1.17",
         "illuminate/database": "~5.1",
-        "robmorgan/phinx": "^0.9.1"
+        "robmorgan/phinx": "^0.9.1",
+        "rmccue/requests": "^1.7"
     },
     "require-dev": {
         "phpunit/phpunit": ">=4.8 < 6.0"
@@ -26,11 +27,11 @@
         "process-timeout" : 0
     },
     "scripts": {
-
-        "test": "php vendor/bin/phpunit  -c config/phpunit.xml",
+        "test": "ENV=test DONT_RUN=true php vendor/bin/phpunit  -c config/phpunit.xml",
         "start": "php -S localhost:8080 -t public",
+        "start-test-server": "ENV=test php -S localhost:9988 -t public",
         "make-migrations": "php vendor/bin/phinx create -c config/phinx.yml",
-        "migrate": "php vendor/bin/phinx migrate -c config/phinx.yml"
+        "migrate": "php vendor/bin/phinx migrate -c config/phinx.yml -e prod"
     }
 
 }
