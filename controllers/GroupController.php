@@ -15,6 +15,27 @@ class GroupController
 {
     /**
      *  Creates a new group
+     *
+     * $sample_response
+     *    {
+     *      "name": "Secret Birthday Party",
+     *      "id": 3,
+     *      "members": [
+     *        {
+     *          "username": "Nathan",
+     *          "id": 2
+     *        },
+     *        {
+     *          "username": "Sailor",
+     *          "id": 3
+     *        },
+     *        {
+     *          "username": "Alamet",
+     *          "id": 1
+     *        }
+     *      ]
+     *    }
+     * sample_response$
      */
     public function create($request, $response, $attributes, $validated_data)
     {
@@ -31,6 +52,43 @@ class GroupController
 
     /**
      * List all groups of the user
+     *
+     * $sample_response
+     *   [
+     *      {
+     *        "name": "sigorta",
+     *        "id": 1,
+     *        "members": [
+     *          {
+     *            "username": "jamie",
+     *            "id": 2
+     *          },
+     *          {
+     *            "username": "Alamet",
+     *            "id": 1
+     *          }
+     *        ]
+     *      },
+     *      {
+     *        "name": "Secret Birthday Party",
+     *        "id": 3,
+     *        "members": [
+     *          {
+     *            "username": "Nathan",
+     *            "id": 2
+     *          },
+     *          {
+     *            "username": "Sailor",
+     *            "id": 3
+     *          },
+     *          {
+     *            "username": "Alamet",
+     *            "id": 1
+     *          }
+     *        ]
+     *      }
+     *    ]
+     * sample_response$
      */
     public function list_groups($request, $response, $attributes, $validated_data)
     {
@@ -40,6 +98,27 @@ class GroupController
 
     /**
      * Get details of a group
+     *
+     * $sample_response
+     *      {
+     *        "name": "Secret Birthday Party",
+     *        "id": 3,
+     *        "members": [
+     *          {
+     *            "username": "Nathan",
+     *            "id": 2
+     *          },
+     *          {
+     *            "username": "Sailor",
+     *            "id": 3
+     *          },
+     *          {
+     *            "username": "Alamet",
+     *            "id": 1
+     *          }
+     *        ]
+     *      }
+     * sample_response$
      */
     public function retrieve($request, $response, $attributes, $validated_data)
     {
@@ -56,6 +135,27 @@ class GroupController
 
     /**
      * Add a new user to a group
+     *
+     * $sample_response
+     *      {
+     *        "name": "Secret Birthday Party",
+     *        "id": 3,
+     *        "members": [
+     *          {
+     *            "username": "Nathan",
+     *            "id": 2
+     *          },
+     *          {
+     *            "username": "Sailor",
+     *            "id": 3
+     *          },
+     *          {
+     *            "username": "Alamet",
+     *            "id": 1
+     *          }
+     *        ]
+     *      }
+     * sample_response$
      */
     public function add_user($request, $response, $attributes, $validated_data)
     {
@@ -81,6 +181,27 @@ class GroupController
 
     /**
      * Remove a person from a group or Leave a group
+     * 
+     * $sample_response
+     *      {
+     *        "name": "Secret Birthday Party",
+     *        "id": 3,
+     *        "members": [
+     *          {
+     *            "username": "Nathan",
+     *            "id": 2
+     *          },
+     *          {
+     *            "username": "Sailor",
+     *            "id": 3
+     *          },
+     *          {
+     *            "username": "Alamet",
+     *            "id": 1
+     *          }
+     *        ]
+     *      }
+     * sample_response$
      */
     public function remove_user($request, $response, $attributes, $validated_data)
     {

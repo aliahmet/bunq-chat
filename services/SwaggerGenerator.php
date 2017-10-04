@@ -4,6 +4,7 @@ namespace Swagger;
 
 use Closure;
 use ReflectionClass;
+use ReflectionMethod;
 
 class SwaggerGenerator
 {
@@ -22,26 +23,22 @@ class SwaggerGenerator
     {
         $docs = [];
         foreach ($this->routes as $route) {
-            $pattern = $route[0];
-            $method = $route[1];
-            $rules = $route[2];
-            $view = $route[3];
+            list($pattern,$method,$rules,$view) = $route;
 
             $title = title_case(trim(str_replace("/", " ", $pattern)));
             if (!$view instanceof Closure) {
-                $view = explode(":", $view);
-                $class = $view[0];
-                $fn = $view[1];
-                $reflector = new ReflectionClass($class);
-                $fn_doc = $reflector->getMethod($fn)->getDocComment();
+                list($class, $fn) = explode(":", $view);
+                $reflector = new ReflectionMethod($class, $fn);
+                $fn_doc = $reflector->getDocComment();
                 if ($fn_doc) {
                     $title = trim(explode("\n", $fn_doc)[1]);
                     $title = substr($title, 1);
+                    $sample_response = $this->extract_sample_response($fn_doc);
 
                 }
             }
             set_default($docs, $pattern, []);
-            $docs[$pattern][strtolower($method)] = $this->generate_path($method, $pattern, $title, $this->generate_parameters($rules));
+            $docs[$pattern][strtolower($method)] = $this->generate_path($method, $pattern, $title, $this->generate_parameters($rules),$sample_response);
 
 
         }
@@ -88,7 +85,7 @@ class SwaggerGenerator
     /**
      *  Generates A Path from an endpoint
      */
-    function generate_path($method, $path, $title, $parameters)
+    function generate_path($method, $path, $title, $parameters, $sample_response)
     {
         preg_match_all('/{(.*?)}/', $path, $matches);
         $group = explode("/", $path)[1];
@@ -103,7 +100,14 @@ class SwaggerGenerator
             "summary" => $title,
             "parameters" => $parameters,
             "tags" => [$group],
-            "responses" => ["200" => ["description" => ""]]
+            "responses" => ["200" => [
+                "description" => "",
+                "examples" => [
+                    "application/json" => [
+                        $sample_response
+                    ]
+                ]
+            ]]
         ];
 
     }
@@ -138,5 +142,15 @@ class SwaggerGenerator
     {
         $route_doc = $this->generate_route_doc();
         return $this->generate_open_api_with_paths($route_doc);
+    }
+
+    public function extract_sample_response($doc){
+        if(strstr($doc, "sample_response")){
+            $doc = str_replace("\n", " ", $doc);
+            $doc = str_replace("*", " ", $doc);
+            $sample_response = explode("sample_response", $doc)[1];
+            return json_decode($sample_response, true);
+        }
+
     }
 }

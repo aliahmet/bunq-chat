@@ -1,7 +1,8 @@
 <?php
-namespace  Http;
 
-include_once ROOT_PATH."utils.php";
+namespace Http;
+
+include_once ROOT_PATH . "utils.php";
 
 class Validator
 {
@@ -18,7 +19,7 @@ class Validator
      *
      */
 
-    public static  function check($ruleSet)
+    public static function check($ruleSet)
     {
         # Load validators
         $all_validators = require "validators.php";
@@ -28,9 +29,9 @@ class Validator
         $validated_data = [];
 
         foreach ($ruleSet as $name => $rule) {
-            $rules =    get_or_default($rule['rules'], []);
+            $rules = get_or_default($rule['rules'], []);
             $required = get_or_default($rule['required'], true);
-            $type =     get_or_default($rule['type'], "POST");
+            $type = get_or_default($rule['type'], "POST");
 
 
             $validators = array_map(function ($name) use ($all_validators) {
@@ -40,19 +41,19 @@ class Validator
             try {
                 $value = Validator::applyCheck($name, $validators, $required, $type);
                 $validated_data[$name] = $value;
-            } catch (\ValidationException $e){
+            } catch (\ValidationException $e) {
                 $errors[$name] = $e->getMessage();
             }
         }
 
-        if($errors){
+        if ($errors) {
             throw new \APIException($errors);
         }
         return $validated_data;
 
     }
 
-    private static  function applyCheck($name, $validators, $required, $type)
+    private static function applyCheck($name, $validators, $required, $type)
     {
         $map = [
             "GET" => $_GET,
@@ -61,17 +62,17 @@ class Validator
             "HEADER" => $_REQUEST
         ];
         $arr = get_or_default($map[$type], []);
-        if($required && ! array_key_exists($name, $arr)){
+        if ($required && !array_key_exists($name, $arr)) {
             throw  new \ValidationException("This field is required!");
         }
-        if(array_key_exists($name, $arr)){
+        if (array_key_exists($name, $arr)) {
             $value = $arr[$name];
-            if($value == ""){
-                throw  new \ValidationException("This field is required!");
-            }
+            if ($value == "") throw  new \ValidationException("This field is required!");
+
             foreach ($validators as $validator) {
                 $validator($value);
             }
+
             return $value;
         }
         return NULL;

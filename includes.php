@@ -23,6 +23,5 @@ auto_discover("http");
 // Services
 auto_discover("services");
 
-
 // Models
 auto_discover("models");

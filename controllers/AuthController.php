@@ -13,14 +13,33 @@ use Model\User;
 
 class AuthController
 {
+
+    /**
+     * Test View
+     *
+     * $sample_response
+     * {
+     *    "message" : "Up and Running!"
+     * }
+     * sample_response$
+     */
     public function test($request, $response, $attributes, $validated_data)
     {
-        throw  new \ErrorException("ds");
-        return $response->withJson(["ok" => $r]);
+        return $response->withJson([
+            "message" => "Up and Running!"
+        ]);
     }
 
     /**
-     * Generate new accesstoken.
+     * Generates and returns a new accesstoken along eith user id
+     *
+     *
+     * $sample_response
+     * {
+     *    "accesstoken" : "ABCDEABCDEABCDEABCDE",
+     *    "id": 151
+     * }
+     * sample_response$
      */
     public function login($request, $response, $attributes, $validated_data)
     {
@@ -40,7 +59,14 @@ class AuthController
     }
 
     /**
-     * Register New User
+     * Register New User and returns an accestoken aling wiht user id
+     *
+     * $sample_response
+     * {
+     *    "accesstoken" : "ABCDEABCDEABCDEABCDE",
+     *    "id": 151
+     * }
+     * sample_response$
      */
     public function register($request, $response, $attributes, $validated_data)
     {
@@ -59,6 +85,13 @@ class AuthController
 
     /**
      *  Finish current session and Invalidate currently used accesstoken.
+     *
+     *
+     * $sample_response
+     * {
+     *    "message" : "Sucessfully logged out"
+     * }
+     * sample_response$
      */
     public function logout($request, $response, $attributes, $validated_data)
     {
@@ -71,6 +104,12 @@ class AuthController
 
     /**
      *  Logout from all devices.
+     *
+     * $sample_response
+     * {
+     *    "message" : "Sucessfully logged out"
+     * }
+     * sample_response$
      */
     public function logout_all($request, $response, $attributes, $validated_data)
     {

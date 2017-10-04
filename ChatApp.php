@@ -54,9 +54,7 @@ class ChatApp extends Slim\App
                 if ($view instanceof Closure) {
                     return $view($request, $response, $args, $validated_data);
                 } else {
-                    $view = explode(":", $view);
-                    $class = $view[0];
-                    $method = $view[1];
+                    list($class, $method) = explode(":", $view);
                     return (new $class)->$method($request, $response, $args, $validated_data);
                 }
             } catch (APIException $api_exception) {

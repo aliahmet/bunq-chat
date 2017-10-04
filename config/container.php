@@ -14,6 +14,7 @@ return [
     'errorHandler' => function ($c) {
         return function ($request, $response, $exception) use ($c) {
             $f = fopen(ROOT_PATH . "logs/app.log", "a+");
+            fwrite($f, "\n\n".$exception->getMessage()."\n");
             fwrite($f, $exception->getTraceAsString());
             fclose($f);
 

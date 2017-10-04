@@ -19,6 +19,13 @@ class MessageController
 {
     /**
      *  Send a new group message
+     *
+     * $sample_response
+     * {
+     *    "message" : "No sample message"
+     * }
+     * sample_response$
+     *
      */
     public function send_group_message($request, $response, $attributes, $validated_data)
     {
@@ -27,6 +34,12 @@ class MessageController
 
     /**
      *  Send a new personal message
+     *
+     * $sample_response
+     * {
+     *    "message" : "ok"
+     * }
+     * sample_response$
      */
     public function send_personal_message($request, $response, $attributes, $validated_data)
     {
@@ -58,11 +71,32 @@ class MessageController
 
     /**
      *  Get last message of all personal conversations
+     *
+     * $sample_response
+     * [
+     *     {
+     *       "sender": "1",
+     *       "receiver": "2",
+     *       "reports": {},
+     *       "date_sent": "2017-10-03 12:54:31",
+     *       "body": "🦄",
+     *       "group": null
+     * },
+     * {
+     *       "sender": "3",
+     *       "receiver": "1",
+     *       "reports": {},
+     *       "date_sent": "2017-10-03 12:54:31",
+     *      "body": "FROM selimm 4",
+     *      "group": null
+     *   }
+     * ]
+     * sample_response$
      */
     public function get_last_messages($request, $response, $attributes, $validated_data)
     {
         $user = User::me();
-        $messages = MessageDB::raw("case when sender = {$user->id} then receiver else sender end as conversation, MAX(sent_date) as s, *")
+        $messages = Message::select(DB::raw("case when sender = {$user->id} then receiver else sender end as conversation, MAX(sent_date) as s, *"))
             ->where(function ($query) use ($user) {
                 $query->where('sender', '=', $user->id)
                     ->orWhere('receiver', '=', $user->id);
@@ -73,7 +107,36 @@ class MessageController
     }
 
     /**
-     *  Only get new messages
+     *  Get messages that weren't already delivered
+     *
+     * $sample_response
+     * [
+     *     {
+     *       "id": "6",
+     *       "sender": "3",
+     *       "receiver": "1",
+     *       "group": null,
+     *       "sent_date": "2017-10-03 12:54:31",
+     *       "body": "FROM selimm",
+     *       "delivered_date": null,
+     *       "seen_date": null,
+     *       "user_id": "1",
+     *       "message_id": "6"
+     *     },
+     *     {
+     *       "id": "9",
+     *       "sender": "3",
+     *       "receiver": "1",
+     *       "group": null,
+     *       "sent_date": "2017-10-03 12:56:59",
+     *       "body": "FROM selimm 3",
+     *       "delivered_date": null,
+     *       "seen_date": null,
+     *       "user_id": "1",
+     *       "message_id": "9"
+     *     },
+     * ]
+     * sample_response$
      */
     public function get_new_messages($request, $response, $attributes, $validated_data)
     {
@@ -81,14 +144,56 @@ class MessageController
         $messages = DB::table('messages')
             ->leftJoin('reports', 'messages.id', '=', 'reports.message_id')
             ->where("reports.user_id", "=", $user->id)
-            ->whereNull("reports.delivered_date")
-            ->get();
+            ->whereNull("reports.delivered_date");
+
+
+        $report_ids = $messages->cloneWithout([])
+            ->whereNull("delivered_date")
+            ->where("reports.user_id", "=", $user->id)
+            ->pluck('reports.id')
+            ->toArray();
+        $messages = $messages->get();
+        Report::whereIn("id", $report_ids)->update(["delivered_date" => Carbon::now()]);
 
         return $response->withJson($messages);
     }
 
     /**
-     *  Get user conversations
+     *  Get all the messages with a user (This response is paginated)
+     *
+     * $sample_response
+     *    {
+     *      "page": 1,
+     *      "count": 3,
+     *      "total_count": 26,
+     *      "result": [
+     *        {
+     *          "sender": "1",
+     *          "receiver": "2",
+     *          "date_sent": "2017-10-03 12:54:31",
+     *          "delivered_date": null,
+     *          "body": "🦄",
+     *          "group": null
+     *        },
+     *        {
+     *          "sender": "1",
+     *          "receiver": "2",
+     *          "date_sent": "2017-10-03 12:54:31",
+     *          "delivered_date": null,
+     *          "body": "This is some message5",
+     *          "group": null
+     *        },
+     *        {
+     *          "sender": "1",
+     *          "receiver": "2",
+     *          "date_sent": "2017-10-03 12:54:31",
+     *          "delivered_date": null,
+     *          "body": "This is some message4",
+     *          "group": null
+     *        }
+     *      ]
+     *    }
+     * sample_response$
      */
     public function get_messages_with_user($request, $response, $attributes, $validated_data)
     {
@@ -140,6 +245,40 @@ class MessageController
 
     /**
      *  Get group messages
+     *
+     * $sample_response
+     *    {
+     *      "page": 1,
+     *      "count": 3,
+     *      "total_count": 26,
+     *      "result": [
+     *        {
+     *          "sender": "1",
+     *          "receiver": "",
+     *          "date_sent": "2017-10-03 12:54:31",
+     *          "delivered_date": null,
+     *          "body": "Hi guys!",
+     *          "group": 2
+     *        },
+     *        {
+     *          "sender": "1",
+     *          "receiver": "",
+     *          "date_sent": "2017-10-03 12:54:31",
+     *          "delivered_date": null,
+     *          "body": "Hi !",
+     *          "group": 2
+     *        },
+     *        {
+     *          "sender": "1",
+     *          "receiver": "",
+     *          "date_sent": "2017-10-03 12:54:31",
+     *          "delivered_date": null,
+     *          "body": "How are you ?",
+     *          "group": 3
+     *        }
+     *      ]
+     *    }
+     * sample_response$
      */
     public function get_messages_in_group($request, $response, $attributes, $validated_data)
     {
@@ -148,6 +287,40 @@ class MessageController
 
     /**
      *  Get all messages
+     *
+     * $sample_response
+     *    {
+     *      "page": 1,
+     *      "count": 3,
+     *      "total_count": 26,
+     *      "result": [
+     *        {
+     *          "sender": "1",
+     *          "receiver": "2",
+     *          "date_sent": "2017-10-03 12:54:31",
+     *          "delivered_date": null,
+     *          "body": "🦄",
+     *          "group": null
+     *        },
+     *        {
+     *          "sender": "1",
+     *          "receiver": "2",
+     *          "date_sent": "2017-10-03 12:54:31",
+     *          "delivered_date": null,
+     *          "body": "This is some message 5",
+     *          "group": null
+     *        },
+     *        {
+     *          "sender": "1",
+     *          "receiver": "2",
+     *          "date_sent": "2017-10-03 12:54:31",
+     *          "delivered_date": null,
+     *          "body": "This is some message 4",
+     *          "group": null
+     *        }
+     *      ]
+     *    }
+     * sample_response$
      */
     public function get_all_messages($request, $response, $attributes, $validated_data)
     {
