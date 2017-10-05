@@ -3,7 +3,6 @@
 namespace Swagger;
 
 use Closure;
-use ReflectionClass;
 use ReflectionMethod;
 
 class SwaggerGenerator
@@ -78,6 +77,7 @@ class SwaggerGenerator
         $parameters[] = [
             "name" => "Authorization",
             "in" => "header",
+            "description" => "Accesstoken if requrired, 32 chars long - all capital",
             "required" => false,
         ];
 

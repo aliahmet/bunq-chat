@@ -1,5 +1,6 @@
 ## Bunq Chat Assignment 🦄
 
+Here are some notes about dıfferent parts of the project.  I wanted to keep it -not so long- so please ask me if anything is not clear.
 
 ## 1.	Framework Selection
 I was thinking about not using any framework and constructing from very scratch but then I decided to use Slim Framework just for routing, and couple of open source libraries. If you ask why not a more popular one like Zend or Laravel, they ship with lots of features out-of-box and I wanted to build the most part.
@@ -7,7 +8,9 @@ I was thinking about not using any framework and constructing from very scratch 
 
 ## 2.	Serving
 
-Just `composer update` and you are ready to go! You can put files in `apache2` or serve in place via `composer start`.
+Just `composer update && composer migrate` and you are ready to go! You can put files in `apache2` or serve in place via `composer start`.
+
+
 
 ## 3.	Dependencies
 PHP >= 5.5, <7
@@ -39,6 +42,10 @@ I have 5 models:
 #### 3.c. Migrations
 Tables are created and uptadated with migrations.Phinx -originally developed for cakephp- is very good library to create migrations. 
 
+**Commands:**
+* `composer make-migration -- MigrationClassName` Create a phinx migration
+* `composer migrate` Run migrations
+
 #### 3.d. Controllers &amp; Routing
 app.ph contains routing informaton. if a  request path and method matches a view than right controller and method(as in funciton) is called.
 
@@ -50,13 +57,20 @@ This way we make sure handling of view is stopped immediately.
 Api exceptions are not errors they are interceptors so they are expected and non-dangerous. Other exceptions (ErrorException etc)
 result in 500 repsonses and logged
 
+**Commands:**
+* `composer log` listen to logs
 
-### f. Tests
+### 3.f. Tests
 Test folder contains live server tests. 
 To run the tests you first need a live-test-server. The reason I prefered test is live test is envorinment dependant
 so you can run the test get the exact outcomes that would happen that specific env. These results may differ in different envs.
 
 Not that, live-test-server and prod server may run along and they wouldn't disturb each other.
+
+**Commands:**
+* `composer start-test-server` Run test server
+* `composer test` Launch test suits
+
 
 ## 4. Functionality
 
@@ -110,7 +124,21 @@ Thanks to reports:
 * If someone new comes to the group then we keep old messages safe and private from there.
 * We get to see who sees message and who didn’t in a group.
 
+#### 4.d Retriving messages:
+Youn can get:
+   * Chat with a specific user
+   * Chat in a group
+   * or, All messages
+   
+Note that one some one retrieves messages their report for that person is marked as delivered.
+You can ask only for undelivered messages in each group.
+ 
+For example if you are using short-polling to get the messages. (Which is the case in this project) you can ask for only undelivered messages instead of all.
 
+I also the consept of **Cover Messages** that are the last messages of all conversations. The idea is a faster bootstrap of client screen.
+
+When application is first launched only the last message is seen so you can call the /message/cover/ endpoint and
+get those fast before you deal with other ones.
 
 
 
@@ -119,7 +147,10 @@ Thanks to reports:
 
 I deployed a demo on [http://bunq-chat.aliahmetbingul.com/](http://bunq-chat.aliahmetbingul.com/)
 
-There is doc dynamically created by views at /docs/ endpoint. In docs you can find endpoints, descriptions, how to call them  and you can actually call them.
+There is doc dynamically created by DocComments at /docs/ endpoint. 
+Every time you create a new view it is automatically in docs so you don't need to document 
+independantly.
+In docs you can find endpoints, descriptions, how to call them  and you can actually call them.
 
 For demo docs see [http://bunq-chat.aliahmetbingul.com/docs/](http://bunq-chat.aliahmetbingul.com/docs/)
 

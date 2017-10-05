@@ -31,7 +31,8 @@
         "start": "php -S localhost:8080 -t public",
         "start-test-server": "ENV=test php -S localhost:9988 -t public",
         "make-migrations": "php vendor/bin/phinx create -c config/phinx.yml",
-        "migrate": "php vendor/bin/phinx migrate -c config/phinx.yml -e prod"
+        "migrate": "php vendor/bin/phinx migrate -c config/phinx.yml -e prod",
+        "log": "tail -f logs/app.log"
     }
 
 }

@@ -119,7 +119,21 @@ $app->get('/message/group/{group_id}/', ['auth'], "\Controller\MessageController
             "rules" => ["boolean"]
         ],
     ]);
-$app->get('/message/all/', ['auth'], "\Controller\MessageController:get_all_messages");
+$app->get('/message/all/', ['auth'], "\Controller\MessageController:get_all_messages",
+    [
+        "page" => [
+            "required" => false,
+            "description" => "default: 1",
+            "type" => "GET",
+            "rules" => ["numeric"]
+        ],
+        "only_new" => [
+            "description" => "Only non-delivered messages. (true or false) default:false",
+            "required" => false,
+            "type" => "GET",
+            "rules" => ["boolean"]
+        ],
+    ]);
 
 $app->post('/message/mark-read/', ['auth'], "\Controller\MessageController:mark_message_as_read",
     [

@@ -22,14 +22,40 @@ class MessageController
      *
      * $sample_response
      * {
-     *    "message" : "No sample message"
+     *    "message" : "ok"
      * }
      * sample_response$
      *
      */
     public function send_group_message($request, $response, $attributes, $validated_data)
     {
-        throw new APIException("Not Implemented");
+
+        $group_id = intval($validated_data['group']);
+        $user = User::me();
+        $group = $user->groups->find($group_id);
+
+        if (!$group) {
+            throw new APIException("Group doesn't exist or you are not allowed to see it!");
+        }
+
+
+        $message = new Message;
+        $message->sender = $user->id;
+        $message->group = $group->id;
+        $message->body = $validated_data['body'];
+        $message->save();
+
+        foreach ($group->users()->get() as $member){
+            if($member->id == $user->id)
+                continue;
+            $report = new Report;
+            $report->message_id = $message->id;
+            $report->user_id = $member->id;
+            $report->save();
+        }
+
+
+        return $response->withJson(["message" => "ok"], 201);
     }
 
     /**
@@ -134,7 +160,7 @@ class MessageController
      *       "seen_date": null,
      *       "user_id": "1",
      *       "message_id": "9"
-     *     },
+     *     }
      * ]
      * sample_response$
      */
@@ -146,7 +172,7 @@ class MessageController
             ->where("reports.user_id", "=", $user->id)
             ->whereNull("reports.delivered_date");
 
-        Report::mark_as_delivered($messages, $user);
+        $messages = Report::mark_as_delivered($messages, $user);
         return $response->withJson($messages);
     }
 
@@ -204,7 +230,7 @@ class MessageController
         // Retrieve conversation
         $all_messages = Message::betweenUsers($user, $other_user);
 
-        if ($validated_data['only_new'])
+        if ($validated_data['only_new'] == "true")
             $all_messages->whereNull("reports.delivered_date");
 
         $total = $all_messages->count();
@@ -215,7 +241,7 @@ class MessageController
         $count = $messages->cloneWithout([])->count();
 
         // Set messages delivered
-        Report::mark_as_delivered($messages, $user);
+        $messages = Report::mark_as_delivered($messages, $user);
 
 
         return $response->withJson([
@@ -231,7 +257,7 @@ class MessageController
                     "body" => $message->body,
                     "group" => $message->group,
                 ];
-            }, $messages->get()->toArray())
+            }, $messages->toArray())
         ]);
     }
 
@@ -287,7 +313,7 @@ class MessageController
 
         $all_messages = Message::inGroup($user, $group);
 
-        if ($validated_data['only_new'])
+        if ($validated_data['only_new'] == "true")
             $all_messages->whereNull("reports.delivered_date");
 
         $total = $all_messages->count();
@@ -298,7 +324,7 @@ class MessageController
         $count = $messages->cloneWithout([])->count();
 
         // Set messages delivered
-        Report::mark_as_delivered($messages, $user);
+        $messages = Report::mark_as_delivered($messages, $user);
 
 
         return $response->withJson([
@@ -314,12 +340,12 @@ class MessageController
                     "body" => $message->body,
                     "group" => $message->group,
                 ];
-            }, $messages->get()->toArray())
+            }, $messages->toArray())
         ]);
     }
 
     /**
-     *  Get all the messages (This response is paginated)
+     *  Get all the messages sent to you (This response is paginated)
      *
      * $sample_response
      *    {
@@ -365,8 +391,8 @@ class MessageController
             ->leftJoin('reports', 'messages.id', '=', 'reports.message_id')
             ->where("reports.user_id", "=", $user->id);
 
-        if ($validated_data['only_new'])
-            $all_messages->whereNull("reports.delivered_date");
+        if ($validated_data['only_new'] == "true")
+            $all_messages = $all_messages->whereNull("reports.delivered_date");
 
         $total = $all_messages->count();
 
@@ -376,7 +402,7 @@ class MessageController
         $count = $messages->cloneWithout([])->count();
 
         // Set messages delivered
-        Report::mark_as_delivered($messages, $user);
+        $messages = Report::mark_as_delivered($messages, $user);
 
 
         return $response->withJson([
@@ -394,7 +420,7 @@ class MessageController
                     "body" => $message->body,
                     "group" => $message->group,
                 ];
-            }, $messages->get()->toArray())
+            }, $messages->toArray())
         ]);
 
     }

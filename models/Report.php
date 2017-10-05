@@ -26,6 +26,7 @@ class Report extends Model
             ->toArray();
         $messages = $messages->get();
         Report::whereIn("id", $report_ids)->update(["delivered_date" => Carbon::now()]);
+        return $messages;
     }
 
 
