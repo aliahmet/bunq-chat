@@ -147,5 +147,5 @@ $app->post('/message/mark-read/', ['auth'], "\Controller\MessageController:mark_
 
 
 $app->serve_swagger();
-if (getenv("DONT_RUN"))
+if (!getenv("DONT_RUN"))
     $app->run();
