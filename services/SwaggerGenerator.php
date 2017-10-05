@@ -57,6 +57,7 @@ class SwaggerGenerator
             $required = get_or_default($rule['required'], true);
             $type = get_or_default($rule['type'], "POST");
             $parser = get_or_default($rule['parser'], "string");
+            $description = get_or_default($rule['description'], "");
             $map = [
                 "GET" => "query",
                 "POST" => "formData",
@@ -67,7 +68,8 @@ class SwaggerGenerator
                 "name" => $name,
                 "in" => $map[$type],
                 "required" => $required,
-                "explode" => ($parser == "list")
+                "explode" => ($parser == "list"),
+                "description" => $description
             ];
 
         }
@@ -101,7 +103,7 @@ class SwaggerGenerator
             "parameters" => $parameters,
             "tags" => [$group],
             "responses" => ["200" => [
-                "description" => "Successful Response:",
+                "description" => "Example Successful Response Format:",
                 "examples" => [
                     "application/json" => [
                         $sample_response

@@ -16,5 +16,9 @@ return [
         if(User::where("username","=", $value)->count()> 0)
             throw  new ValidationException("Username is already taken!");
 
+    },
+    "boolean" => function($value){
+        if($value != "true" && $value != "false")
+            throw  new ValidationException("Value must be `true` or `false`");
     }
 ];

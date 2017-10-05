@@ -6,3 +6,8 @@
     background: url(ribbon.png);
     background-size: 100% auto;
 }
+.response pre.microlight:not(.example){
+    background: #00843b;
+    color: black;
+    border: 2px solid black;
+}

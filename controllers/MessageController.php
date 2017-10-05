@@ -70,7 +70,7 @@ class MessageController
     }
 
     /**
-     *  Get last message of all personal conversations
+     *  Get cover messages
      *
      * $sample_response
      * [
@@ -146,17 +146,10 @@ class MessageController
             ->where("reports.user_id", "=", $user->id)
             ->whereNull("reports.delivered_date");
 
-
-        $report_ids = $messages->cloneWithout([])
-            ->whereNull("delivered_date")
-            ->where("reports.user_id", "=", $user->id)
-            ->pluck('reports.id')
-            ->toArray();
-        $messages = $messages->get();
-        Report::whereIn("id", $report_ids)->update(["delivered_date" => Carbon::now()]);
-
+        Report::mark_as_delivered($messages, $user);
         return $response->withJson($messages);
     }
+
 
     /**
      *  Get all the messages with a user (This response is paginated)
@@ -197,7 +190,7 @@ class MessageController
      */
     public function get_messages_with_user($request, $response, $attributes, $validated_data)
     {
-        $other_user = User::find(intval($attributes['id']));
+        $other_user = User::find(intval($attributes['user_id']));
         $user = User::me();
 
         // Simple checks
@@ -210,6 +203,10 @@ class MessageController
 
         // Get retrieve conversation
         $all_messages = Message::betweenUsers($user, $other_user);
+
+        if ($validated_data['only_new'])
+            $all_messages->whereNull("reports.delivered_date");
+
         $total = $all_messages->count();
 
         // Paginate
@@ -244,7 +241,7 @@ class MessageController
     }
 
     /**
-     *  Get group messages
+     *  Get all the messages with in a Group (This response is paginated)
      *
      * $sample_response
      *    {
@@ -282,11 +279,60 @@ class MessageController
      */
     public function get_messages_in_group($request, $response, $attributes, $validated_data)
     {
-        throw new APIException("Not Implemented");
+
+        $group_id = $attributes['group_id'];
+        $user = User::me();
+        $group = $user->groups->find($group_id);
+
+        if (!$group) {
+            throw new APIException("Group doesn't exist or you are not allowed to see it!");
+        }
+
+        // Get retrieve conversation
+
+        $all_messages = DB::table('messages')
+            ->leftJoin('reports', 'messages.id', '=', 'reports.message_id')
+            ->where("reports.user_id", "=", $user->id)
+            ->where("messages.group", "=", $group_id);
+
+        if ($validated_data['only_new'])
+            $all_messages->whereNull("reports.delivered_date");
+
+        $total = $all_messages->count();
+
+        // Paginate
+        $page = intval(get_or_default($validated_data['page'], 1));
+        $messages = $all_messages->limit(10)->offset(($page - 1) * 10);
+        $count = $messages->cloneWithout([])->count();
+
+        // Set messages delivered
+        $report_ids = $messages->cloneWithout([])
+            ->whereNull("delivered_date")
+            ->where("reports.user_id", "=", $user->id)
+            ->pluck('reports.id')
+            ->toArray();
+        Report::whereIn("id", $report_ids)->update(["delivered_date" => Carbon::now()]);
+
+
+        return $response->withJson([
+            "page" => $page,
+            "count" => $count,
+            "total_count" => $total,
+            "result" => array_map(function ($message) {
+                return [
+                    "sender" => $message->sender,
+                    "receiver" => $message->receiver,
+                    "date_sent" => $message->date_sent,
+                    "delivered_date" => $message->delivered_date,
+                    "body" => $message->body,
+                    "group" => $message->group,
+                ];
+            }, $messages->get()->toArray())
+        ]);
     }
 
     /**
-     *  Get all messages
+     *  Get all the messages (This response is paginated)
      *
      * $sample_response
      *    {
@@ -325,6 +371,39 @@ class MessageController
     public function get_all_messages($request, $response, $attributes, $validated_data)
     {
         throw new APIException("Not Implemented");
+    }
+
+
+    /**
+     *  Mark message as read
+     *
+     * $sample_response
+     * {
+     *    "message" : "ok"
+     * }
+     * sample_response$
+     */
+    public function mark_message_as_read($request, $response, $attributes, $validated_data)
+    {
+        $message_id = $validated_data['message_id'];
+        $user = User::me();
+        $message = DB::table('messages')
+            ->select("messages.*, reports.*, reports.id as r_id")
+            ->leftJoin('reports', 'messages.id', '=', 'reports.message_id')
+            ->where("reports.user_id", "=", $user->id)
+            ->where("messages.id", "=", $message_id)
+            ->whereNull("reports.read_date")
+            ->first();
+
+
+        if (!$message) {
+            throw new \APIException("There is no such message or it is not meant to you!");
+        }
+        $report = Report::find($message->r_id);
+        $report->seen_date = Carbon::now();
+        $report->save();
+
+
     }
 
 
