@@ -121,7 +121,7 @@ $app->get('/message/group/{group_id}/', ['auth'], "\Controller\MessageController
     ]);
 $app->get('/message/all/', ['auth'], "\Controller\MessageController:get_all_messages");
 
-$app->get('/message/mark-read/', ['auth'], "\Controller\MessageController:mark_message_as_read",
+$app->post('/message/mark-read/', ['auth'], "\Controller\MessageController:mark_message_as_read",
     [
         "message_id" => [
             "required" => true,

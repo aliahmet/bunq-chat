@@ -9,7 +9,7 @@
 namespace Controller;
 
 use \APIException;
-use Carbon\Carbon;
+use \Carbon\Carbon;
 use Illuminate\Database\Capsule\Manager as DB;
 use Model\Message;
 use Model\Report;
@@ -96,7 +96,7 @@ class MessageController
     public function get_last_messages($request, $response, $attributes, $validated_data)
     {
         $user = User::me();
-        $messages = Message::select(DB::raw("case when sender = {$user->id} then receiver else sender end as conversation, MAX(sent_date) as s, *"))
+        $messages = Message::selectRaw("case when sender = {$user->id} then receiver else sender end as conversation, MAX(sent_date) as s, *")
             ->where(function ($query) use ($user) {
                 $query->where('sender', '=', $user->id)
                     ->orWhere('receiver', '=', $user->id);
@@ -201,7 +201,7 @@ class MessageController
             throw new \APIException("No chat with self!");
         }
 
-        // Get retrieve conversation
+        // Retrieve conversation
         $all_messages = Message::betweenUsers($user, $other_user);
 
         if ($validated_data['only_new'])
@@ -215,12 +215,7 @@ class MessageController
         $count = $messages->cloneWithout([])->count();
 
         // Set messages delivered
-        $report_ids = $messages->cloneWithout([])
-            ->whereNull("delivered_date")
-            ->where("reports.user_id", "=", $user->id)
-            ->pluck('reports.id')
-            ->toArray();
-        Report::whereIn("id", $report_ids)->update(["delivered_date" => Carbon::now()]);
+        Report::mark_as_delivered($messages, $user);
 
 
         return $response->withJson([
@@ -288,12 +283,9 @@ class MessageController
             throw new APIException("Group doesn't exist or you are not allowed to see it!");
         }
 
-        // Get retrieve conversation
+        // Retrieve conversation
 
-        $all_messages = DB::table('messages')
-            ->leftJoin('reports', 'messages.id', '=', 'reports.message_id')
-            ->where("reports.user_id", "=", $user->id)
-            ->where("messages.group", "=", $group_id);
+        $all_messages = Message::inGroup($user, $group);
 
         if ($validated_data['only_new'])
             $all_messages->whereNull("reports.delivered_date");
@@ -306,12 +298,7 @@ class MessageController
         $count = $messages->cloneWithout([])->count();
 
         // Set messages delivered
-        $report_ids = $messages->cloneWithout([])
-            ->whereNull("delivered_date")
-            ->where("reports.user_id", "=", $user->id)
-            ->pluck('reports.id')
-            ->toArray();
-        Report::whereIn("id", $report_ids)->update(["delivered_date" => Carbon::now()]);
+        Report::mark_as_delivered($messages, $user);
 
 
         return $response->withJson([
@@ -370,7 +357,46 @@ class MessageController
      */
     public function get_all_messages($request, $response, $attributes, $validated_data)
     {
-        throw new APIException("Not Implemented");
+        $user = User::me();
+
+        // Get retrieve conversation
+
+        $all_messages = DB::table('messages')
+            ->leftJoin('reports', 'messages.id', '=', 'reports.message_id')
+            ->where("reports.user_id", "=", $user->id);
+
+        if ($validated_data['only_new'])
+            $all_messages->whereNull("reports.delivered_date");
+
+        $total = $all_messages->count();
+
+        // Paginate
+        $page = intval(get_or_default($validated_data['page'], 1));
+        $messages = $all_messages->limit(10)->offset(($page - 1) * 10);
+        $count = $messages->cloneWithout([])->count();
+
+        // Set messages delivered
+        Report::mark_as_delivered($messages, $user);
+
+
+        return $response->withJson([
+            "page" => $page,
+            "count" => $count,
+            "total_count" => $total,
+            "result" => array_map(function ($message) {
+                return [
+                    "id" => $message->id,
+                    "sender" => $message->sender,
+                    "receiver" => $message->receiver,
+                    "date_sent" => $message->date_sent,
+                    "delivered_date" => $message->delivered_date,
+                    "seen_date" => $message->seen_date,
+                    "body" => $message->body,
+                    "group" => $message->group,
+                ];
+            }, $messages->get()->toArray())
+        ]);
+
     }
 
 
@@ -388,22 +414,30 @@ class MessageController
         $message_id = $validated_data['message_id'];
         $user = User::me();
         $message = DB::table('messages')
-            ->select("messages.*, reports.*, reports.id as r_id")
+            ->selectRaw("messages.*, reports.*, reports.id as r_id")
             ->leftJoin('reports', 'messages.id', '=', 'reports.message_id')
             ->where("reports.user_id", "=", $user->id)
             ->where("messages.id", "=", $message_id)
-            ->whereNull("reports.read_date")
+            ->whereNull("reports.seen_date")
             ->first();
 
 
         if (!$message) {
-            throw new \APIException("There is no such message or it is not meant to you!");
+            throw new \APIException([
+                "message" => "You cant perform this action because because of one or more reasons below.",
+                "reasons" => [
+                    "Message doesn't exist",
+                    "Message is not meant for you",
+                    "Message is already seen"
+                ]
+            ]);
         }
         $report = Report::find($message->r_id);
         $report->seen_date = Carbon::now();
         $report->save();
 
 
+        return $response->withJson(["message" => "ok"]);
     }
 
 

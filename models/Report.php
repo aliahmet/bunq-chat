@@ -9,6 +9,7 @@
 namespace Model;
 
 
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
 class Report extends Model
