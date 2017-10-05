@@ -29,7 +29,7 @@
     "scripts": {
         "test": "ENV=test DONT_RUN=true php vendor/bin/phpunit  -c config/phpunit.xml",
         "start": "php -S localhost:8080 -t public",
-        "start-test-server": "ENV=test php -S localhost:9988 -t public",
+        "start-test-server": "ENV=test DONT_RUN=true php -S localhost:9988 -t public",
         "make-migrations": "php vendor/bin/phinx create -c config/phinx.yml",
         "migrate": "php vendor/bin/phinx migrate -c config/phinx.yml -e prod",
         "log": "tail -f logs/app.log"

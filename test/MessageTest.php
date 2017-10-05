@@ -238,7 +238,7 @@ class MessageTest extends BaseTestCase
 
         # Not allowed to get messages
         $reponse = $this->get("/message/group/1/", $this->user_headers_3, $data);
-        $messages = json_decode($reponse->body, true)['result'];
+        $messages = json_decode($reponse->body, true);
         self::assertEquals(403, $reponse->status_code, $reponse->body);
 
 
